@@ -3,20 +3,23 @@ import { View, StyleSheet } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
 import { Colors } from "../../theme/colors";
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   return (
     <View style={styles.container}>
       <Text variant="headlineMedium" style={styles.title}>
-        Welcome Back 👋
+        Create Account
       </Text>
 
-      <Text variant="bodyMedium" style={styles.subtitle}>
-        Sign in to Government Scheme AI
-      </Text>
+      <TextInput
+        label="Full Name"
+        mode="outlined"
+        style={styles.input}
+      />
 
       <TextInput
         label="Email"
         mode="outlined"
+        keyboardType="email-address"
         style={styles.input}
       />
 
@@ -27,16 +30,19 @@ export default function LoginScreen() {
         style={styles.input}
       />
 
+      <TextInput
+        label="Confirm Password"
+        mode="outlined"
+        secureTextEntry
+        style={styles.input}
+      />
+
       <Button
         mode="contained"
         style={styles.button}
         onPress={() => {}}
       >
-        Login
-      </Button>
-
-      <Button mode="text" onPress={() => {}}>
-        Create New Account
+        Register
       </Button>
     </View>
   );
@@ -49,22 +55,14 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: Colors.background,
   },
-
   title: {
     textAlign: "center",
+    marginBottom: 25,
     fontWeight: "bold",
-    marginBottom: 8,
   },
-
-  subtitle: {
-    textAlign: "center",
-    marginBottom: 30,
-  },
-
   input: {
     marginBottom: 16,
   },
-
   button: {
     marginTop: 10,
     paddingVertical: 6,

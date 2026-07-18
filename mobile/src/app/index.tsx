@@ -1,5 +1,5 @@
-import SplashScreen from "../screens/Splash/SplashScreen";
+import RegisterScreen from "../screens/Register/RegisterScreen";
 
 export default function Home() {
-  return <SplashScreen />;
+  return <RegisterScreen />;
 }
