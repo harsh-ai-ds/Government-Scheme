@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { HelperText, TextInput } from "react-native-paper";
-
-interface Props {
+import { TextInput, HelperText } from "react-native-paper";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+interface PasswordInputProps {
   label: string;
   value: string;
   onChangeText: (text: string) => void;
@@ -15,24 +15,30 @@ export default function PasswordInput({
   onChangeText,
   error = false,
   errorMessage = "",
-}: Props) {
+}: PasswordInputProps) {
   const [secureText, setSecureText] = useState(true);
 
   return (
     <>
       <TextInput
-        label={label}
         mode="outlined"
+        label={label}
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={secureText}
         error={error}
+
         right={
           <TextInput.Icon
-            icon={secureText ? "eye-off" : "eye"}
+            icon={() => (
+              <MaterialCommunityIcons
+                name={secureText ? "eye-off" : "eye"}
+                size={24}
+              />
+            )}
             onPress={() => setSecureText(!secureText)}
           />
-        }
+      }
       />
 
       {error && (

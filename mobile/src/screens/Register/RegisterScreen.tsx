@@ -1,119 +1,255 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Alert } from "react-native";
-import { Button, Text, TextInput } from "react-native-paper";
+import {
+  View,
+  StyleSheet,
+  Alert,
+  ScrollView,
+} from "react-native";
+import { Button, Text } from "react-native-paper";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 
 import { auth } from "../../services/firebase";
 import { Colors } from "../../theme/colors";
 
+import CustomInput from "../../components/auth/CustomInput";
+import PasswordInput from "../../components/auth/PasswordInput";
+
+import {
+  validateName,
+  validateEmail,
+  validatePassword,
+  validateConfirmPassword,
+} from "../../utils/validation";
+
 export default function RegisterScreen() {
-  const [fullName, setFullName] = useState("");
+  // ==========================
+  // Form State
+  // ==========================
+
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleRegister = async () => {
-    if (!fullName || !email || !password || !confirmPassword) {
-      Alert.alert("Error", "Please fill all fields.");
-      return;
-    }
+  // ==========================
+  // Error State
+  // ==========================
 
-    if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
-      return;
-    }
-    console.log("Email:", email);
-    console.log("Password:", password);
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] =
+    useState("");
+
+  // ==========================
+  // Loading
+  // ==========================
+
+  const [loading, setLoading] = useState(false);
+
+  // ==========================
+  // Validate Form
+  // ==========================
+
+  const validateForm = () => {
+    const nameErr = validateName(name);
+    const emailErr = validateEmail(email);
+    const passwordErr = validatePassword(password);
+    const confirmErr = validateConfirmPassword(
+      password,
+      confirmPassword
+    );
+
+    setNameError(nameErr);
+    setEmailError(emailErr);
+    setPasswordError(passwordErr);
+    setConfirmPasswordError(confirmErr);
+
+    return !(
+      nameErr ||
+      emailErr ||
+      passwordErr ||
+      confirmErr
+    );
+  };
+
+  // ==========================
+  // Register User
+  // ==========================
+
+  const handleRegister = async () => {
+    if (!validateForm()) return;
+
+    setLoading(true);
+
     try {
       await createUserWithEmailAndPassword(
         auth,
         email.trim(),
         password
-   );
-      Alert.alert(
-        "Success",
-        "Account created successfully!"
       );
 
-      // Later we will navigate to Login or Home screen.
-    } catch (error: any) {
-        console.log("Firebase Error Code:", error.code);
-        console.log("Firebase Error Message:", error.message);
+      Alert.alert(
+        "Registration Successful",
+        "Your account has been created successfully."
+      );
 
-        Alert.alert(error.code, error.message);
+      // Clear Form
+      setName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+
+      // TODO:
+      // router.replace("/login")
+      // OR
+      // navigation.navigate("Login")
+
+    } catch (error: any) {
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          Alert.alert(
+            "Registration Failed",
+            "This email is already registered."
+          );
+          break;
+
+        case "auth/invalid-email":
+          Alert.alert(
+            "Registration Failed",
+            "Please enter a valid email address."
+          );
+          break;
+
+        case "auth/weak-password":
+          Alert.alert(
+            "Registration Failed",
+            "Password is too weak."
+          );
+          break;
+
+        default:
+          Alert.alert(
+            "Registration Failed",
+            error.message
+          );
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
+  // ==========================
+  // UI
+  // ==========================
+
   return (
-    <View style={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text variant="headlineMedium" style={styles.title}>
+        Government Scheme
+      </Text>
+
+      <Text variant="titleMedium" style={styles.subtitle}>
         Create Account
       </Text>
 
-      <TextInput
+      <CustomInput
         label="Full Name"
-        mode="outlined"
-        value={fullName}
-        onChangeText={setFullName}
-        style={styles.input}
+        value={name}
+        onChangeText={setName}
+        error={!!nameError}
+        errorMessage={nameError}
       />
 
-      <TextInput
+      <View style={styles.space} />
+
+      <CustomInput
         label="Email"
-        mode="outlined"
-        keyboardType="email-address"
-        autoCapitalize="none"
         value={email}
         onChangeText={setEmail}
-        style={styles.input}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        error={!!emailError}
+        errorMessage={emailError}
       />
 
-      <TextInput
+      <View style={styles.space} />
+
+      <PasswordInput
         label="Password"
-        mode="outlined"
-        secureTextEntry
         value={password}
         onChangeText={setPassword}
-        style={styles.input}
+        error={!!passwordError}
+        errorMessage={passwordError}
       />
 
-      <TextInput
+      <View style={styles.space} />
+
+      <PasswordInput
         label="Confirm Password"
-        mode="outlined"
-        secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
-        style={styles.input}
+        error={!!confirmPasswordError}
+        errorMessage={confirmPasswordError}
       />
 
       <Button
         mode="contained"
         style={styles.button}
+        contentStyle={styles.buttonContent}
+        loading={loading}
+        disabled={loading}
         onPress={handleRegister}
       >
         Register
       </Button>
-    </View>
+
+      <Text style={styles.footer}>
+        Already have an account? Login
+      </Text>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "center",
     padding: 24,
     backgroundColor: Colors.background,
   },
+
   title: {
     textAlign: "center",
-    marginBottom: 25,
     fontWeight: "bold",
+    marginBottom: 8,
+    color: Colors.primary,
   },
-  input: {
-    marginBottom: 16,
+
+  subtitle: {
+    textAlign: "center",
+    marginBottom: 30,
   },
+
+  space: {
+    height: 10,
+  },
+
   button: {
-    marginTop: 10,
-    paddingVertical: 6,
+    marginTop: 25,
+    borderRadius: 8,
+  },
+
+  buttonContent: {
+    paddingVertical: 8,
+  },
+
+  footer: {
+    textAlign: "center",
+    marginTop: 25,
+    color: "gray",
   },
 });
