@@ -1,5 +1,5 @@
-import RegisterScreen from "../screens/Register/RegisterScreen";
+import WelcomeScreen from "../screens/Welcome/WelcomeScreen";
 
 export default function Home() {
-  return <RegisterScreen />;
+  return <WelcomeScreen />;
 }
